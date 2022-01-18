@@ -1,4 +1,4 @@
- // 开发生产环境区分
+ // cross-env 开发生产环境区分
  const {merge} = require("webpack-merge");
  const baseConfig = require('./webpack.config.base.js');
  const devConfig = require('./webpack.config.dev.js');
