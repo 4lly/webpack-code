@@ -6,11 +6,23 @@
  * 1个chunk可以是多个模块
  * 模块？ nodejs里面万物皆模块
  */
-const path = require("path")
-const {CleanWebpackPlugin} = require("clean-webpack-plugin")
+const path = require("path");
+// 清空打包文件夹
+const {CleanWebpackPlugin} = require("clean-webpack-plugin");
+// 生成html模板
 const htmlWebpackPlugin = require("html-webpack-plugin");
+// css分包
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+// 压缩css
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+// 清除css摇树
+const PurgeCSSPlugin = require('purgecss-webpack-plugin');
+const glob =require('glob-all');
+// 热模块替换需要用到
 const webpack = require("webpack");
+// 开发生产环境区分
+const merge = require("webpack-merge")
+
 module.exports = {
   // 上下文 项目打包的相对路径 必须是绝对路径
   // context:process.cwd(),
@@ -37,9 +49,11 @@ module.exports = {
      * name
      * id
      */
+    // publicPath:"cdnUrl.com"
   },
   // 构建模式 none production development
   mode:'development',
+  // devtool:"cleap-inline-source-map",
   // loader 模块转换 从右到左，从下到上
   module:{
     rules: [
@@ -60,7 +74,8 @@ module.exports = {
                 ]
               },
             },
-        }]
+          }
+        ]
       },
       {
         test: /\.less$/i,
@@ -69,6 +84,18 @@ module.exports = {
           // MiniCssExtractPlugin.loader,
           "style-loader",
           'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  require("autoprefixer")({
+                  overrideBrowserslist: ["last 2 versions",">1%"]
+                  })
+                ]
+              },
+            },
+          },
           'less-loader',
         ],
       },
@@ -116,6 +143,14 @@ module.exports = {
 		//jquery通过script引⼊之后，全局中即有了jQuery变量
 		'jquery':'jQuery'
 	},
+  optimization: {
+    // js 摇树优化
+    usedExports: true,//哪些导出的模块被使⽤了，再做打包
+    //代码分割
+    // splitChunks: {
+    //   chunks: "all", //所有的chunks代码公共的部分分离出来成为⼀个单独的⽂件
+    // },
+  },
   devServer: {
 		static: {
       directory: path.join(__dirname, './dist'),
@@ -143,12 +178,29 @@ module.exports = {
     new CleanWebpackPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     // new MiniCssExtractPlugin({
-    //   filename: "[name].css"
+    //   filename: "css/[name].css"
     // }),
     new htmlWebpackPlugin({
       title: "My App",
       filename: "app.html",
-      template: "./src/public/index.html"
-     })
+      template: "./src/public/index.html",
+      minify: {
+        //压缩HTML⽂件
+        removeComments: true, //移除HTML中的注释
+        collapseWhitespace: true, //删除空⽩符与换⾏符
+        minifyCSS: true //压缩内联css
+        }
+     }),
+     new OptimizeCSSAssetsPlugin({
+      cssProcessor: require("cssnano"), //引⼊cssnano配置压缩选项
+      cssProcessorOptions: {
+        discardComments: { removeAll: true }
+      }
+     }),
+    //  清除css摇树
+    new PurgeCSSPlugin({
+      paths: glob.sync(`${path.join(__dirname, 'src')}/**/*`, { nodir: true }),
+       safelist: ['body']
+    })
   ],
 }
