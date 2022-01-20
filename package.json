@@ -10,7 +10,6 @@
     "test:dev:cross": "cross-env NODE_ENV=test webpack --config ./webpack.config.test.cross.js",
     "dev": "webpack serve --config ./webpack.config.dev.js",
     "build": "webpack --config ./webpack.config.pro.js"
-
   },
   "keywords": [],
   "author": "",
@@ -48,6 +47,7 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/runtime": "^7.16.7",
     "@babel/runtime-corejs3": "^7.16.8",
-    "core-js": "^3.20.2"
+    "core-js": "^3.20.2",
+    "lodash": "^4.17.21"
   }
 }

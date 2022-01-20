@@ -20,8 +20,6 @@ const PurgeCSSPlugin = require('purgecss-webpack-plugin');
 const glob =require('glob-all');
 // 热模块替换需要用到
 const webpack = require("webpack");
-// 开发生产环境区分
-const merge = require("webpack-merge")
 
 module.exports = {
   // 上下文 项目打包的相对路径 必须是绝对路径
@@ -39,7 +37,7 @@ module.exports = {
     // 构建的文件资源放在哪儿？必须是绝对路径
     path:path.resolve(__dirname,"./dist"),
     // 构建的文件资源叫啥 默认是 main.js
-    filename:"main.js",
+    filename:"[name].js",
     // filename:"[name]-[hash:6].js", // 占位符 多出口的对应的多入口
     /**
      * 占位符
@@ -100,33 +98,33 @@ module.exports = {
         ],
       },
       {
-        test: /\.(png|jpe?g|gif)$/,
-        use: {
-          loader: "url-loader",
-          options: {
-						//placeholder占位符[name]⽼资源模块的名称
-						//[ext]⽼资源模块的后缀
-						name: "[name]_[hash:6].[ext]",
-						//打包后的存放位置
-						outputPath: "static/images/",
-            limit: 2048
-					}
+        test: /\.(?:ico|gif|png|jpg|jpeg)$/i,
+        type:'asset',
+        generator:{
+          // filename: 'images/[contenthash][ext][query]',
+          filename: 'images/[name][ext][query]',
+          publicPath: './'
         },
-      },
-      {
-        test: /\.(eot|ttf|woff|woff2|svg)$/i,
-        use: 'file-loader'
-      },
-      {
-        test: /\.m?js$/,
-        exclude: /node_modules/,
-        use: {
-         loader: 'babel-loader',
-         options: {
-          presets: ['@babel/preset-env'],
-         },
-        },
+        // parser:{
+        //   dataUrlCondition:{
+        //       maxSize : 10 * 1024 * 1024
+        //   }
+        // }
+     },
+     {
+      test: /\.(woff(2)?|eot|ttf|otf|svg|)$/,
+      type: 'asset/inline'
+     },
+     {
+      test: /\.m?js$/,
+      exclude: /node_modules/,
+      use: {
+       loader: 'babel-loader',
+       options: {
+        presets: ['@babel/preset-env'],
        },
+      },
+     },
     ]
   },
   resolve:{
@@ -146,10 +144,28 @@ module.exports = {
   optimization: {
     // js 摇树优化
     usedExports: true,//哪些导出的模块被使⽤了，再做打包
+    concatenateModules: true,// 作用域提升
     //代码分割
-    // splitChunks: {
-    //   chunks: "all", //所有的chunks代码公共的部分分离出来成为⼀个单独的⽂件
-    // },
+    splitChunks: {
+      chunks: "all", //所有的chunks代码公共的部分分离出来成为⼀个单独的⽂件
+      automaticNameDelimiter: '-',//打包分割符号
+      minSize: 30000,//最⼩尺⼨，当模块⼤于30kb
+      minChunks: 1,//打包⽣成的chunk⽂件最少有⼏个chunk引⽤了这个模块
+      cacheGroups: {//缓存组
+        lodash: {
+          test: /lodash/,
+          name:"lodash", //要缓存的分隔出来的chunk名称
+          priority: -10//缓存组优先级数字越⼤，优先级越⾼
+        },
+        other:{
+          chunks: "initial", //必须三选⼀："initial" | "all" | "async"(默认就是async)
+          test: /lodash/, //正则规则验证，如果符合就提取chunk,
+          name:"other",
+          minSize: 30000,
+          minChunks: 1,
+        }
+      }
+    },
   },
   devServer: {
 		static: {

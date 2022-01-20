@@ -6,6 +6,7 @@ import './assets/font/iconfont.css';
 import pic from "./assets/images/goods1.png"
 import axios from "axios"
 import jquery from "jquery"
+import _ from "lodash"
 console.log(jquery)
 var img = new Image();
 img.src = pic;
@@ -36,3 +37,5 @@ const arr = [new Promise(() => {}), new Promise(() => {})];
 arr.map(item => {
   console.log(item);
 });
+
+console.log(_.chunk([1,2,3,4,5,6,7,8,9],2))

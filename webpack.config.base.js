@@ -62,7 +62,8 @@ const {CleanWebpackPlugin} = require("clean-webpack-plugin");
           test: /\.(?:ico|gif|png|jpg|jpeg)$/i,
           type:'asset',
           generator:{
-            filename: 'images/[contenthash][ext][query]',
+            // filename: 'images/[contenthash][ext][query]',
+            filename: 'images/[name][ext][query]',
             publicPath: './'
           },
           // parser:{

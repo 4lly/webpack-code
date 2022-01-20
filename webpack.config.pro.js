@@ -25,6 +25,32 @@ const baseConfig = require('./webpack.config.base.js')
     // 构建的文件资源叫啥 默认是 main.js
     filename:"[name].js",
   },
+  optimization: {
+    // js 摇树优化
+    usedExports: true,//哪些导出的模块被使⽤了，再做打包
+    concatenateModules: true,//作用域提升
+    //代码分割
+    splitChunks: {
+      chunks: "all", //所有的chunks代码公共的部分分离出来成为⼀个单独的⽂件
+      automaticNameDelimiter: '-',//打包分割符号
+      minSize: 30000,//最⼩尺⼨，当模块⼤于30kb
+      minChunks: 1,//打包⽣成的chunk⽂件最少有⼏个chunk引⽤了这个模块
+      cacheGroups: {//缓存组
+        lodash: {
+          test: /lodash/,
+          name:"lodash", //要缓存的分隔出来的chunk名称
+          priority: -10//缓存组优先级数字越⼤，优先级越⾼
+        },
+        other:{
+          chunks: "initial", //必须三选⼀："initial" | "all" | "async"(默认就是async)
+          test: /lodash/, //正则规则验证，如果符合就提取chunk,
+          name:"other",
+          minSize: 30000,
+          minChunks: 1,
+        }
+      }
+    },
+  },
    // 插件配置
    plugins: [
     new CleanWebpackPlugin(),
